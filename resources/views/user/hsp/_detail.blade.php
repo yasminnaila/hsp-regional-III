@@ -1,0 +1,19 @@
+<div class="detail-header card">
+<div><strong>Kode</strong><span>{{ $hsp->work_code }}</span></div><div></div><div><strong>Pekerjaan</strong><span>{{ $hsp->description }}</span></div><div><strong>Satuan</strong><span>{{ $hsp->unit }}</span></div>
+<form method="GET"><label>Wilayah<select name="region" onchange="this.form.submit()">@foreach($regions as $region)<option value="{{ $region->id }}" @selected($regionId==$region->id)>{{ $region->name }}</option>@endforeach</select></label></form>
+@if(!empty($showExport) && !empty($exportUrl))
+<a href="{{ $exportUrl }}" class="btn" style="justify-self:end;align-self:center;background:var(--accent-light);color:#065f46;border-color:#a7f3d0;padding:8px 16px;font-size:14px;min-width:140px;justify-content:center;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#065f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export
+</a>
+@endif
+</div>
+@php($labels=['labor'=>'A. TENAGA KERJA','material'=>'B. BAHAN','equipment'=>'C. PERALATAN'])
+@foreach($labels as $type=>$label)
+<section class="card"><h3>{{ $label }}</h3><div class="table-wrap"><table class="hsp-table"><thead><tr><th>No</th><th>Kode</th><th>Uraian</th><th>Satuan</th><th class="num">Koefisien</th><th class="num">Harga Satuan</th><th class="num">Jumlah</th></tr></thead><tbody>
+@forelse($analysis['groups'][$type] as $row)<tr><td>{{ $loop->iteration }}</td><td>{{ $row['code'] ?? '-' }}</td><td>{{ $row['description'] }}</td><td>{{ $row['unit'] }}</td><td class="num">{{ number_format($row['coefficient'],4,',','.') }}</td><td class="num">Rp {{ number_format($row['unit_price'],0,',','.') }}</td><td class="num">Rp {{ number_format($row['amount'],0,',','.') }}</td></tr>
+@empty<tr><td colspan="7" class="muted">Belum ada komponen {{ strtolower(substr($label,3)) }}.</td></tr>@endforelse
+</tbody><tfoot><tr><th colspan="5"></th><th class="num">Jumlah</th><th class="num">Rp {{ number_format($analysis['subtotals'][$type],0,',','.') }}</th></tr></tfoot></table></div></section>
+@endforeach
+<section class="summary card"><div><span>D. Jumlah Biaya Langsung (A+B+C)</span><strong>Rp {{ number_format($analysis['direct_cost'],0,',','.') }}</strong></div><div><span>E. Overhead & Profit ({{ number_format($analysis['overhead_percent'],2,',','.') }}%)</span><strong>Rp {{ number_format($analysis['overhead_amount'],0,',','.') }}</strong></div><div class="final"><span>F. Harga Satuan Pekerjaan</span><strong>Rp {{ number_format($analysis['final_price'],0,',','.') }}</strong></div></section>
+<div class="toolbar"><a class="btn" href="{{ $backUrl }}">Kembali</a></div>
