@@ -182,13 +182,23 @@ class ImportHspController extends Controller
                 }
             }
 
-            // Subtotal
+            // Subtotal tanpa overhead, lalu subtotal dikali overhead & profit
+            $overheadLabel = rtrim(rtrim(number_format($analysis['overhead_percent'], 2, ',', '.'), '0'), ',');
             $sheet->setCellValue("F{$row}", 'Jumlah');
-            $sheet->setCellValue("G{$row}", $analysis['subtotals'][$typeKey] ?? 0);
+            $sheet->setCellValue("G{$row}", $analysis['subtotals_rounded'][$typeKey] ?? 0);
+            $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'F9FAFB']],
+                'borders' => ['top' => ['borderStyle' => 'thin', 'color' => ['rgb' => 'D1D5DB']]],
+            ]);
+            $sheet->getStyle("G{$row}")->getNumberFormat()->setFormatCode('#,##0');
+            $row++;
+
+            $sheet->setCellValue("F{$row}", "Jumlah × {$overheadLabel}% overhead & profit");
+            $sheet->setCellValue("G{$row}", $analysis['subtotals_with_overhead'][$typeKey] ?? 0);
             $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
                 'font' => ['bold' => true],
                 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'FEF3C7']],
-                'borders' => ['top' => ['borderStyle' => 'thin', 'color' => ['rgb' => 'D1D5DB']]],
             ]);
             $sheet->getStyle("G{$row}")->getNumberFormat()->setFormatCode('#,##0');
             $row++;
@@ -197,8 +207,7 @@ class ImportHspController extends Controller
         // Summary section
         $row++; // blank row
         $summary = [
-            ['D. Jumlah Biaya Langsung (A+B+C)', $analysis['direct_cost']],
-            ['E. Overhead & Profit (' . number_format($analysis['overhead_percent'], 2, ',', '.') . '%)', $analysis['overhead_amount']],
+            ['D. Jumlah Biaya Langsung (A+B+C)', $analysis['direct_cost_rounded']],
             ['F. Harga Satuan Pekerjaan', $analysis['final_price']],
         ];
 
@@ -207,7 +216,7 @@ class ImportHspController extends Controller
             $sheet->setCellValue("G{$row}", $s[1]);
             $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
                 'font' => ['bold' => true, 'size' => 11],
-                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $i === 2 ? 'DBEAFE' : 'F9FAFB']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $i === 1 ? 'DBEAFE' : 'F9FAFB']],
                 'borders' => [
                     'allBorders' => ['borderStyle' => 'thin', 'color' => ['rgb' => 'D1D5DB']],
                 ],
@@ -338,7 +347,7 @@ class ImportHspController extends Controller
     {
         $result = [];
         foreach ($regions as $region) {
-            $result[$region->id] = ['material' => 0.0, 'jasa' => 0.0];
+            $result[$region->id] = ['material_cents' => 0, 'jasa_cents' => 0];
         }
 
         foreach ($hsp->components as $comp) {
@@ -349,16 +358,18 @@ class ImportHspController extends Controller
             }
             foreach ($regions as $region) {
                 $price = (float) ($item->prices->firstWhere('region_id', $region->id)?->price ?? 0);
-                $amount = (float) $comp->coefficient * $price;
+                $cents = (int) round(((float) $comp->coefficient * $price) * 100);
                 if ($type === 'material') {
-                    $result[$region->id]['material'] += $amount;
+                    $result[$region->id]['material_cents'] += $cents;
                 } else {
-                    $result[$region->id]['jasa'] += $amount;
+                    $result[$region->id]['jasa_cents'] += $cents;
                 }
             }
         }
 
         foreach ($result as &$values) {
+            $values['material'] = (int) intdiv($values['material_cents'], 100);
+            $values['jasa'] = (int) intdiv($values['jasa_cents'], 100);
             $values['harga'] = $values['material'] + $values['jasa'];
         }
 
@@ -443,9 +454,9 @@ class ImportHspController extends Controller
             foreach ($regions as $region) {
                 $values = $calc[$hsp->id][$region->id] ?? ['material' => 0.0, 'jasa' => 0.0, 'harga' => 0.0];
                 $data[] = $this->regionalCode($hsp, $region);
-                $data[] = $this->roundDown(1.15 * (float) $values['material'], -2);
-                $data[] = $this->roundDown(1.15 * (float) $values['jasa'], -2);
-                $data[] = $this->roundDown(1.15 * (float) $values['harga'], -2);
+                $data[] = (int) intdiv($values['material'] * 115, 10000) * 100;
+                $data[] = (int) intdiv($values['jasa'] * 115, 10000) * 100;
+                $data[] = (int) intdiv($values['harga'] * 115, 10000) * 100;
             }
             $sheet->fromArray([$data], null, 'B' . $row);
             $row++;

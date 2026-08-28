@@ -1,0 +1,79 @@
+﻿Jumlah baris cacat (sel): 566
+Per kolom: JASA=75, MATERIAL+OH=137, MAT=145, HARGA+OH=173, JASA+OH=36
+Jumlah kode pekerjaan kena: 75
+Daftar kode:
+  XI.5 (R1,2,3,4) - Pemasangan Kabel NYY 3 x 2,5 mm² per m'
+  XIII.6 (R1) - Pemasangan Closet Jongkok Toto per buah
+  VII.7 (R2,3,4) - Pemasangan Jendela Kaca rangka Aluminium; kaca 6mm per m2
+  XI.7 (R1,2,3,4) - Pemasangan Kabel NYY 4 x 2,5 mm² per m'
+  VII.8 (R2,3,4) - Pemasangan Jendela Kaca rangka Aluminium; kaca 8mm per m2
+  I.9 (R3,2,1,4) - Bongkar Pasangan Batu Kali secara Manual untuk Bangunan Gedung per m3
+  XIII.9 (R1,4,3,2) - Pemasangan Urinoir per buah
+  XIII.12 (R3,1,4,2) - Pemasangan Kran diameter ½" atau ¾" ex TOTO per buah
+  XV.12 (R3,2,4,1) - Perkerasan Beton SC 3,8 Mpa (setara f'c 30 Mpa) secara Semi Mekanis per m3
+  XIII.13 (R4,1,3,2) - Pemasangan Kran diameter ½" atau ¾" ex Onda per buah
+  XV.13 (R2,4,1,3) - Perkerasan Beton SC 3,8 Mpa (setara f'c 30 Mpa) Menggunakan Ready Mixed per m3
+  XIII.14 (R3,1,4,2) - Pemasangan Jet Washer / Jet Shower per buah
+  XVI.14 (R3,1,4,2) - Pasang AC Existing 1/2 - 2 PK per Unit
+  XVI.15 (R4,1,3,2) - Pasang AC Baru 1/2 - 2 PK per Unit
+  VII.16 (R1,2,3,4) - Pemasangan Kaca Tempered tebal 8 mm per m2
+  XII.16 (R1,2,3,4) - Pemasangan Instalasi Detector Addressable per titik
+  VII.17 (R1,2,3,4) - Pemasangan Kaca Tempered tebal 10 mm per m2
+  XII.17 (R1,2,3,4) - Pemasangan Instalasi Detector Konvensional per titik
+  VII.18 (R1,2,3,4) - Pemasangan Kaca Tempered tebal 12 mm per m2
+  XII.18 (R1,2,3,4) - Pemasangan Instalasi Lamp Indicator per titik
+  XII.19 (R1,2,3,4) - Pemasangan Instalasi Manual Push Button per titik
+  XII.20 (R1,2,3,4) - Pemasangan Instalasi Alarm Bell per titik
+  XIII.20 (R1,4,3,2) - Pemasangan Shower + Tiang + Kran + Hand Shower ex Toto per buah
+  XII.21 (R1,2,3,4) - Pemasangan Instalasi Alarm Indicator Bell per titik
+  XIII.21 (R3,1,4,2) - Pemasangan Hand Shower + Kran Set per buah
+  XII.22 (R1,2,3,4) - Pemasangan Instalasi Intercom Jack per titik
+  XIII.22 (R4,1,3,2) - Pemasangan Hand Shower ex Toto Set per buah
+  XII.23 (R1,2,3,4) - Pemasangan Instalasi Flow & Tempre Switch per titik
+  XVI.27 (R3,2,1,4) - Pagar Kawat Harmonika Rangka Besi Siku per m2
+  X.35 (R1,2,3,4) - Pemasangan Aquaproof per m2
+  XV.35 (R3,2,4) - Box Culvert 40x40x100 dengan lantai kerja f'c 10 Mpa per m'
+  XV.36 (R3,2,4) - Box Culvert 50x50x100 dengan lantai kerja f'c 10 Mpa per m'
+  XV.37 (R3,4,2) - Box Culvert 60x60x100 dengan lantai kerja f'c 10 Mpa per m'
+  XV.38 (R2,4,3) - Box Culvert 80x80x100 dengan lantai kerja f'c 10 Mpa per m'
+  XV.39 (R2,3,4) - Box Culvert 100x100x100 dengan lantai kerja f'c 10 Mpa per m'
+  XV.40 (R4,2,3) - Box Culvert 150x150x100 dengan lantai kerja f'c 10 Mpa per m'
+  XV.41 (R4,3,2) - Box Culvert 200x200x100 dengan lantai kerja f'c 10 Mpa per m'
+  III.43 (R4) - Turap Bambu dari Geribig Bambu secara Manual, JAT < 0,5 m per m2
+  XII.45 (R3) - Pemasangan Indoor Fix Dome IP Camera per unit
+  XII.46 (R3) - Pemasangan Outdoor Fix Dome IP Camera per unit
+  XII.47 (R1,2,3,4) - Pemasangan Instalasi Camera CCTV per titik
+  XII.50 (R3) - Pemasangan Power Amplifier 360 Watt per unit
+  XII.51 (R3) - Pemasangan Power Amplifier 240 Watt per unit
+  XII.52 (R3) - Pemasangan Power Amplifier 120 Watt per unit
+  XII.61 (R3) - Pemasangan Instalasi Horn Speaker per titik
+  XII.62 (R3,2,4,1) - Pemasangan Instalasi Ceiling Speaker per titik
+  XII.65 (R3) - Pemasangan Router Broadband per unit
+  XII.67 (R4,1,2,3) - Pemasangan Instalasi Outlet Data per titik
+  XIII.70 (R3,1,4,2) - Pemasangan Pipa Air Limbah Jenis Pipa Tanah, DN. 6" (150 mm) per m
+  XIII.71 (R1,4,3,2) - Pemasangan Pipa Air Limbah Jenis Pipa Tanah, DN. 8" (200 mm) per m
+  XII.73 (R2,1,4,3) - Pemasangan Instalasi TV per titik
+  XII.83 (R1,4,2,3) - Pemasangan Kabel Power Exhaust Fan NYY 3 x 2,5mm2 per titik
+  XI.105 (R3) - Pemasangan Air Terminal @1.000 mm per unit
+  XI.106 (R3) - Pemasangan Base Air Terminal per unit
+  XI.107 (R3) - Pemasangan DC Clip Non Metalic Clamp per unit
+  XI.110 (R3) - Pemasangan Bimetallic Connector per unit
+  XI.111 (R3) - Pemasangan 5/8" Rod Coupling per unit
+  XI.114 (R3) - Pemasangan Polymer Inspection Pit per unit
+  XI.119 (R3) - Pemasangan 15 x 500 mm Alumunium Air Rod per unit
+  XI.120 (R3) - Pemasangan 15 x 500 mm Copper. Air Rod per unit
+  XI.122 (R3) - Pemasangan 5/8" x 1800 mm Extensible Copperbond Rod per buah
+  XI.123 (R3) - Pemasangan 5/8" Copperbond Rod per buah
+  XI.124 (R3) - Pemasangan Grounding Rod Gip 1" Panjang 1 m per buah
+  XI.125 (R3) - Pemasangan Grounding Rod Gip 1" Panjang 2 m per buah
+  XI.126 (R3) - Pemasangan 1" Rod Coupling per buah
+  XI.130 (R1,2,3,4) - Pemasangan Instalasi Kabel Tanam per titik
+  XI.131 (R1,2,3,4) - Pemasangan Instalasi Lampu (Kabel LSOH) per titik
+  XI.152 (R3) - Pemasangan Instalasi Lampu Luar/Taman (dengan Kabel NYFGBY) per titik
+  XI.153 (R3) - Pemasangan Instalasi Lampu Luar/Taman (dengan Kabel NYY) per titik
+  XI.154 (R3) - Pemasangan Instalasi Lampu Luar/Taman (dengan Kabel NYM) per titik
+  XI.155 (R3) - Pemasangan Instalasi Lampu PJU (dengan Kabel NYFGBY) per titik
+  XI.156 (R1,2,3,4) - Pemasangan Instalasi Lampu PJU (dengan Kabel NYY) per titik
+  XI.157 (R3) - Pemasangan Instalasi Lampu PJU Tiang 7 m (dengan Kabel NYM) per titik
+  XI.158 (R3) - Pemasangan Instalasi Lampu PJU Tiang 9 m (dengan Kabel NYM) per titik
+  XI.168 (R3) - Pemasangan Instalasi Listrik per titik

@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\BasicItemController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\HspController as AdminHspController;
 use App\Http\Controllers\Admin\ImportHspController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\User\HspController as UserHspController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +25,11 @@ Route::middleware('guest')->group(function (): void {
         LoginController::class,
         'login',
     ])->name('login.attempt');
+
+    Route::get('/lupa-password', [PasswordResetController::class, 'create'])->name('password.request');
+    Route::post('/lupa-password', [PasswordResetController::class, 'store'])->name('password.email');
+    Route::get('/atur-ulang-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
+    Route::post('/atur-ulang-password', [PasswordResetController::class, 'update'])->name('password.update');
 });
 
 /*
@@ -35,7 +42,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         $user = $request->user();
 
         if ($user !== null && $user->role === 'admin') {
-            return redirect()->route('admin.hsp.index');
+            return redirect()->route('admin.dashboard');
         }
 
         return redirect()->route('hsp.index');
@@ -72,6 +79,14 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         ->middleware('admin')
         ->group(function (): void {
             /*
+             * Ringkasan data HSP.
+             */
+            Route::get('/dashboard', [
+                DashboardController::class,
+                'index',
+            ])->name('dashboard');
+
+            /*
              * Upah, bahan, dan alat.
              */
             Route::resource(
@@ -79,6 +94,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
                 BasicItemController::class
             )->only([
                 'index',
+                'store',
                 'edit',
                 'update',
             ]);
@@ -116,5 +132,19 @@ Route::middleware(['auth', 'active'])->group(function (): void {
                 'hsp',
                 AdminHspController::class
             );
+
+            /*
+             * Kelola komponen analisa AHS (tenaga kerja,
+             * bahan, dan peralatan).
+             */
+            Route::post('/hsp/{hsp}/components', [
+                AdminHspController::class,
+                'storeComponent',
+            ])->name('hsp.components.store');
+
+            Route::delete('/hsp/{hsp}/components/{component}', [
+                AdminHspController::class,
+                'destroyComponent',
+            ])->name('hsp.components.destroy');
         });
 });

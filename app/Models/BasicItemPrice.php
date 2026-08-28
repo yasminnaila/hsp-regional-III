@@ -18,8 +18,10 @@ class BasicItemPrice extends Model
         'price',
         'reference_price_1',
         'reference_link_1',
+        'reference_url_1',
         'reference_price_2',
         'reference_link_2',
+        'reference_url_2',
     ];
 
     /**
@@ -28,9 +30,9 @@ class BasicItemPrice extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
-            'reference_price_1' => 'decimal:2',
-            'reference_price_2' => 'decimal:2',
+            'price' => 'decimal:3',
+            'reference_price_1' => 'decimal:3',
+            'reference_price_2' => 'decimal:3',
         ];
     }
 

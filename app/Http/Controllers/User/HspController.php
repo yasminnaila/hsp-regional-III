@@ -42,12 +42,36 @@ class HspController extends Controller
                         ->orWhereHas('prices', fn ($priceQuery) => $priceQuery->where('regional_code', 'like', "%{$search}%"));
                 });
             })
-            ->orderBy('work_code')
+            ->orderBy('sort_key')
+            ->orderBy('id')
             ->paginate(20)
             ->withQueryString();
 
+        $statsRow = Hsp::query()
+            ->from('hsp')
+            ->where('hsp.is_active', true)
+            ->where('hsp.period_id', $periodId)
+            ->when($categoryId, fn ($query) => $query->where('hsp.category_id', $categoryId))
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($subQuery) use ($search): void {
+                    $subQuery->where('hsp.work_code', 'like', "%{$search}%")
+                        ->orWhere('hsp.binkon_code', 'like', "%{$search}%")
+                        ->orWhere('hsp.description', 'like', "%{$search}%")
+                        ->orWhere('hsp_prices.regional_code', 'like', "%{$search}%");
+                });
+            })
+            ->join('hsp_prices', 'hsp_prices.hsp_id', '=', 'hsp.id')
+            ->where('hsp_prices.region_id', $regionId)
+            ->selectRaw('
+                COUNT(DISTINCT hsp.id) AS total,
+                ROUND(AVG(hsp_prices.price), 0) AS avg_price,
+                MAX(hsp_prices.price) AS max_price,
+                ROUND(AVG(hsp.tkdn_percent), 2) AS avg_tkdn
+            ')
+            ->first();
+
         return view('user.hsp.index', compact(
-            'hsp', 'periods', 'regions', 'categories', 'periodId', 'regionId', 'categoryId', 'search'
+            'hsp', 'periods', 'regions', 'categories', 'periodId', 'regionId', 'categoryId', 'search', 'statsRow'
         ));
     }
 

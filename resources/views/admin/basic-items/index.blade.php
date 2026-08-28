@@ -5,11 +5,126 @@
 
 @section('content')
 
+<div class="card basic-item-create">
+    <form
+        method="POST"
+        action="{{ route('admin.basic-items.store') }}"
+    >
+        @csrf
+
+        <input
+            type="hidden"
+            name="period_id"
+            value="{{ $periodId }}"
+        >
+
+        <input
+            type="hidden"
+            name="return_region_id"
+            value="{{ $regionId }}"
+        >
+
+        <h3>Tambah Upah, Bahan &amp; Alat</h3>
+
+        <div class="form-grid">
+            <div>
+                <label for="new-item-type">Jenis</label>
+
+                <select
+                    id="new-item-type"
+                    name="item_type"
+                    required
+                >
+                    <option
+                        value=""
+                        @selected(old('item_type') === '')
+                    >
+                        Pilih Jenis
+                    </option>
+
+                    <option
+                        value="labor"
+                        @selected(old('item_type') === 'labor')
+                    >
+                        Upah
+                    </option>
+
+                    <option
+                        value="material"
+                        @selected(old('item_type') === 'material')
+                    >
+                        Bahan
+                    </option>
+
+                    <option
+                        value="equipment"
+                        @selected(old('item_type') === 'equipment')
+                    >
+                        Alat
+                    </option>
+
+                    <option
+                        value="dkd"
+                        @selected(old('item_type') === 'dkd')
+                    >
+                        DKD
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label for="new-item-description">Uraian</label>
+
+                <input
+                    id="new-item-description"
+                    type="text"
+                    name="description"
+                    value="{{ old('description') }}"
+                    placeholder="Contoh: Juru Gambar"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="new-item-unit">Satuan</label>
+
+                <input
+                    id="new-item-unit"
+                    type="text"
+                    name="unit"
+                    value="{{ old('unit') }}"
+                    placeholder="Contoh: OH"
+                >
+            </div>
+
+            <div>
+                <label for="new-item-price">Harga</label>
+
+                <input
+                    id="new-item-price"
+                    type="number"
+                    name="price"
+                    value="{{ old('price') }}"
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                >
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button type="submit" class="btn primary">
+                + Tambah
+            </button>
+        </div>
+    </form>
+</div>
+
 <form
     method="GET"
     action="{{ route('admin.basic-items.index') }}"
 >
-    <div class="card">
+    <div class="card basic-item-filter">
         <div class="form-grid">
 
             <div>
@@ -136,7 +251,6 @@
                     <th>Uraian</th>
                     <th>Satuan</th>
                     <th class="num">Harga</th>
-                    <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -187,18 +301,6 @@
                         </td>
 
                         <td>
-                            @if ($item->is_active)
-                                <span class="badge success">
-                                    Aktif
-                                </span>
-                            @else
-                                <span class="badge danger">
-                                    Nonaktif
-                                </span>
-                            @endif
-                        </td>
-
-                        <td>
                             <a
                                 href="{{ route(
                                     'admin.basic-items.edit',
@@ -218,7 +320,7 @@
                 @empty
                     <tr>
                         <td
-                            colspan="8"
+                            colspan="7"
                             style="text-align: center;"
                         >
                             Data Upah, Bahan, dan Alat tidak ditemukan.

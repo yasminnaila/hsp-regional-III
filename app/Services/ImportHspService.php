@@ -37,6 +37,8 @@ class ImportHspService
             throw new \RuntimeException('Sheet HSP, AHS, atau Upah Bahan Alat tidak ditemukan.');
         }
 
+        $referenceSheet = $this->loadReferenceSheetWithHyperlinks($filePath);
+
         $period = Period::query()->updateOrCreate(
             ['year' => $year],
             ['name' => 'AHSP Tahun ' . $year, 'is_active' => true]
@@ -55,10 +57,10 @@ class ImportHspService
             }
         }
 
-        $result = DB::transaction(function () use ($hspSheet, $ahsSheet, $basicItemSheet, $period, $regions): array {
+        $result = DB::transaction(function () use ($hspSheet, $ahsSheet, $basicItemSheet, $referenceSheet, $period, $regions): array {
             $hspResult = $this->importHspSheet($hspSheet, $period, $regions);
             $ahsResult = $this->importAhsSheet($ahsSheet, $period, $regions);
-            $referenceResult = $this->importBasicItemReferenceSheet($basicItemSheet, $period, $regions);
+            $referenceResult = $this->importBasicItemReferenceSheet($basicItemSheet, $period, $regions, $referenceSheet);
 
             return array_merge($hspResult, $ahsResult, $referenceResult);
         });
@@ -110,7 +112,14 @@ class ImportHspService
 
             $hsp = Hsp::query()->updateOrCreate(
                 ['period_id' => $period->id, 'work_code' => $workCode],
-                ['category_id' => $currentCategoryId, 'description' => $description, 'unit' => $unit !== '' ? $unit : null, 'is_active' => true]
+                [
+                    'category_id' => $currentCategoryId,
+                    'description' => $description,
+                    'unit' => $unit !== '' ? $unit : null,
+                    'is_active' => true,
+                    'sort_key' => Hsp::sortKeyFromWorkCode($workCode),
+                    'tkdn_percent' => $this->parseTkdnPercent($sheet, $row),
+                ]
             );
 
             $importedHsp++;
@@ -186,18 +195,29 @@ class ImportHspService
             $coefficient = $this->number($this->cellValue($sheet, "F{$row}"));
             $jatengRegionalCode = $this->text($this->cellValue($sheet, "H{$row}"));
 
-            if ($columnA !== '' && $columnC !== '' && str_starts_with($jatengRegionalCode, 'TR3.')) {
-                $currentHsp = $hspMap->get($columnC);
+            if (str_starts_with($jatengRegionalCode, 'TR3.')) {
+                /*
+                 * Baris ini adalah header blok (atau blok yatim/orphan seperti
+                 * "I.0" / "IX.0" / "X.0" yang tersisa di workbook). Header blok
+                 * asli selalu memiliki kolom A dan C terisi. Blok orphan hanya
+                 * memiliki C (kode) dengan A kosong, dan harus dilewati UTUH
+                 * agar komponennya tidak bocor ke HSP sebelumnya.
+                 */
                 $currentType = null;
                 $sortOrder = 0;
 
-                if (!$currentHsp) {
-                    $missingHsp++;
-                    continue;
-                }
+                if ($columnA !== '' && $columnC !== '') {
+                    $currentHsp = $hspMap->get($columnC);
 
-                if ($columnB !== '' && $currentHsp->binkon_code !== $columnB) {
-                    $currentHsp->update(['binkon_code' => $columnB]);
+                    if (!$currentHsp) {
+                        $missingHsp++;
+                    }
+
+                    if ($currentHsp && $columnB !== '' && $currentHsp->binkon_code !== $columnB) {
+                        $currentHsp->update(['binkon_code' => $columnB]);
+                    }
+                } else {
+                    $currentHsp = null;
                 }
 
                 continue;
@@ -269,7 +289,7 @@ class ImportHspService
         return ['components' => $componentCount, 'basic_items' => $basicItemCount, 'basic_item_prices' => $basicItemPriceCount, 'missing_hsp' => $missingHsp];
     }
 
-    private function importBasicItemReferenceSheet(Worksheet $sheet, Period $period, $regions): array
+    private function importBasicItemReferenceSheet(Worksheet $sheet, Period $period, $regions, ?Worksheet $referenceSheet = null): array
     {
         $regionColumns = [
             'JATENG_DIY' => ['price' => 'F', 'reference_price_1' => 'L', 'reference_price_2' => 'Q', 'reference_link_1' => 'V', 'reference_link_2' => 'AA'],
@@ -283,12 +303,17 @@ class ImportHspService
         $itemsByCode = $items->keyBy('code');
         $itemsByTypedKey = [];
         $itemsByLooseKey = [];
+        $itemsBySourceKey = [];
 
         foreach ($items as $item) {
             $typedKey = $this->makeItemMatchKey($item->item_type, $item->description, (string) $item->unit);
             $looseKey = $this->makeLooseItemMatchKey($item->description, (string) $item->unit);
             $itemsByTypedKey[$typedKey] = $item;
             $itemsByLooseKey[$looseKey][] = $item;
+
+            if (filled($item->source_no)) {
+                $itemsBySourceKey[$item->item_type . '|' . $item->source_no][] = $item;
+            }
         }
 
         $currentType = null;
@@ -333,6 +358,7 @@ class ImportHspService
             $itemCode = $this->makeBasicItemCode($currentType, $description, $unit);
             $typedKey = $this->makeItemMatchKey($currentType, $description, $unit);
             $looseKey = $this->makeLooseItemMatchKey($description, $unit);
+            $sourceKey = $currentType . '|' . $sourceNo;
 
             $basicItem = $itemsByCode->get($itemCode) ?? ($itemsByTypedKey[$typedKey] ?? null);
 
@@ -340,6 +366,10 @@ class ImportHspService
                 $looseCandidates = $itemsByLooseKey[$looseKey];
                 $basicItem = collect($looseCandidates)->firstWhere('item_type', $currentType)
                     ?? (count($looseCandidates) === 1 ? $looseCandidates[0] : null);
+            }
+
+            if (!$basicItem && count($itemsBySourceKey[$sourceKey] ?? []) === 1) {
+                $basicItem = $itemsBySourceKey[$sourceKey][0];
             }
 
             if ($basicItem) {
@@ -359,6 +389,7 @@ class ImportHspService
                 $itemsByCode->put($itemCode, $basicItem);
                 $itemsByTypedKey[$typedKey] = $basicItem;
                 $itemsByLooseKey[$looseKey][] = $basicItem;
+                $itemsBySourceKey[$sourceKey][] = $basicItem;
             }
 
             if (!$basicItem) {
@@ -382,18 +413,47 @@ class ImportHspService
                 $actualPrice = $this->number($this->cellValue($sheet, $columns['price'] . $row));
                 $referencePrice1 = $this->nullableNumber($this->cellValue($sheet, $columns['reference_price_1'] . $row));
                 $referencePrice2 = $this->nullableNumber($this->cellValue($sheet, $columns['reference_price_2'] . $row));
-                $referenceLink1 = $this->nullableText($this->cellValue($sheet, $columns['reference_link_1'] . $row));
-                $referenceLink2 = $this->nullableText($this->cellValue($sheet, $columns['reference_link_2'] . $row));
+                [$referenceLink1, $referenceUrl1] = $this->referenceLink(
+                    $referenceSheet ?? $sheet,
+                    $columns['reference_link_1'] . $row
+                );
+                [$referenceLink2, $referenceUrl2] = $this->referenceLink(
+                    $referenceSheet ?? $sheet,
+                    $columns['reference_link_2'] . $row
+                );
+
+                // Empty cells in an import must not erase references entered earlier.
+                $priceData = [
+                    'price' => $actualPrice,
+                ];
+
+                if ($referencePrice1 !== null) {
+                    $priceData['reference_price_1'] = $referencePrice1;
+                }
+
+                if ($referenceLink1 !== null) {
+                    $priceData['reference_link_1'] = $referenceLink1;
+                }
+
+                if ($referenceUrl1 !== null) {
+                    $priceData['reference_url_1'] = $referenceUrl1;
+                }
+
+                if ($referencePrice2 !== null) {
+                    $priceData['reference_price_2'] = $referencePrice2;
+                }
+
+                if ($referenceLink2 !== null) {
+                    $priceData['reference_link_2'] = $referenceLink2;
+                }
+
+                if ($referenceUrl2 !== null) {
+                    $priceData['reference_url_2'] = $referenceUrl2;
+                }
 
                 $basicItem->prices()->updateOrCreate(
                     ['period_id' => $period->id, 'region_id' => $region->id],
-                    [
-                        'price' => $actualPrice,
-                        'reference_price_1' => $referencePrice1,
-                        'reference_link_1' => $referenceLink1,
-                        'reference_price_2' => $referencePrice2,
-                        'reference_link_2' => $referenceLink2,
-                    ]
+                    $priceData
                 );
 
                 $updatedPrices++;
@@ -401,6 +461,45 @@ class ImportHspService
         }
 
         return ['reference_items_matched' => $matchedItems, 'reference_items_created' => $createdItems, 'reference_prices' => $updatedPrices, 'reference_items_skipped' => $skippedItems];
+    }
+
+    private function loadReferenceSheetWithHyperlinks(string $filePath): ?Worksheet
+    {
+        try {
+            $reader = IOFactory::createReaderForFile($filePath);
+            $reader->setLoadSheetsOnly(['Upah Bahan Alat']);
+            $spreadsheet = $reader->load($filePath);
+
+            return $spreadsheet->getSheetByName('Upah Bahan Alat');
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function referenceLink(Worksheet $sheet, string $cell): array
+    {
+        try {
+            $cellObject = $sheet->getCell($cell);
+            $text = trim((string) ($cellObject->getValue() ?? ''));
+            $url = trim((string) $cellObject->getHyperlink()->getUrl());
+
+            if (str_starts_with($text, '=') && preg_match(
+                '~^=\s*HYPERLINK\s*\(\s*"((?:[^"\\\\]|\\\\.)*)"~i',
+                $text,
+                $formulaMatch
+            )) {
+                $url = trim(stripslashes($formulaMatch[1]));
+            }
+
+            return [
+                $text !== '' && !str_starts_with($text, '=')
+                    ? $text
+                    : null,
+                $url !== '' ? $url : null,
+            ];
+        } catch (\Throwable) {
+            return [null, null];
+        }
     }
 
     private function makeBasicItemCode(string $type, string $description, string $unit): string
@@ -445,6 +544,36 @@ class ImportHspService
     {
         $text = $this->text($value);
         return $text !== '' ? $text : null;
+    }
+
+    /**
+     * Membaca persentase TKDN (kolom AV pada sheet HSP). Nilai di workbook
+     * bisa berupa pecahan desimal (0.9133 = 91,33%), bilangan utuh "1"
+     * (= 100%), teks dengan lambang persen ("70.85%"), atau kosong.
+     */
+    private function parseTkdnPercent(Worksheet $sheet, int $row): ?float
+    {
+        $value = $this->cellValue($sheet, "AV{$row}");
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $number = $this->number($value);
+        if ($number <= 0) {
+            $clean = trim(str_replace(['%', "\t"], '', (string) $value));
+            if (is_numeric($clean)) {
+                return round((float) $clean, 2);
+            }
+            return null;
+        }
+
+        // Nilai pecahan (<= 1) berarti fraksi; nilai lain sudah berupa persen.
+        if ($number <= 1) {
+            return round($number * 100, 2);
+        }
+
+        return round($number, 2);
     }
 
     private function cellValue(Worksheet $sheet, string $coordinate): mixed

@@ -4,25 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin HSP')</title>
-    <link rel="stylesheet" href="/css/hsp.css?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="/css/hsp.css?v=42">
 </head>
 <body>
 <div class="app-shell">
+
+    {{-- Topbar mobile (hanya tampil < 900px) --}}
+    <header class="mobile-topbar">
+        <button id="sidebar-toggle" class="hamburger" aria-label="Buka menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="mobile-logo">
+            <img src="/images/telkom-property.webp" alt="Telkom Property" class="mobile-telkom-logo">
+            <span>HSP Regional III</span>
+        </div>
+    </header>
+    <div id="sidebar-overlay" class="sidebar-overlay" hidden></div>
 
     {{-- Sidebar --}}
     <aside class="sidebar">
         <div class="sidebar-inner">
             <div class="sidebar-header">
-                <div class="logo">
-                    HSP
-                    <span class="logo-badge">v1</span>
+                <div class="telkom-brand-panel">
+                    <img src="/images/telkom-property.webp" alt="Telkom Property" class="telkom-logo">
                 </div>
-                <div class="logo-sub">Regional III</div>
+                <div class="sidebar-app-name">Regional III</div>
             </div>
 
             <div class="sidebar-section-label">Menu</div>
 
             <nav class="sidebar-nav">
+                <a href="{{ route('admin.dashboard') }}"
+                   class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                    </span>
+                    <span class="nav-label">Dashboard</span>
+                </a>
+
                 <a href="{{ route('admin.hsp.index') }}"
                    class="nav-item {{ request()->routeIs('admin.hsp.*') ? 'active' : '' }}">
                     <span class="nav-icon">
@@ -70,7 +92,7 @@
         <header class="page-hero">
             <div class="page-hero-left">
                 <div class="page-hero-breadcrumb">
-                    <a href="{{ route('admin.hsp.index') }}">Beranda</a>
+                    <a href="{{ route('admin.dashboard') }}">Beranda</a>
                     @hasSection('breadcrumb')
                         <span>/</span>
                         @yield('breadcrumb')
@@ -106,5 +128,30 @@
         </main>
     </section>
 </div>
+<script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (!toggle || !overlay) return;
+    function open() {
+        document.body.classList.add('sidebar-open');
+        overlay.hidden = false;
+        requestAnimationFrame(function() { overlay.classList.add('show'); });
+    }
+    function close() {
+        document.body.classList.remove('sidebar-open');
+        overlay.classList.remove('show');
+        setTimeout(function() { overlay.hidden = true; }, 250);
+    }
+    toggle.addEventListener('click', function() {
+        document.body.classList.contains('sidebar-open') ? close() : open();
+    });
+    overlay.addEventListener('click', close);
+    document.querySelectorAll('.sidebar a').forEach(function(a) { a.addEventListener('click', close); });
+})();
+document.querySelectorAll('form').forEach(function(form) {
+    form.addEventListener('submit', function() { document.body.classList.add('app-loading'); });
+});
+</script>
 </body>
 </html>

@@ -11,7 +11,7 @@
 @endif
 
 {{-- Steps indicator --}}
-<div style="display:flex;gap:0;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+<div class="import-steps" style="display:flex;gap:0;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
     <div style="flex:1;padding:14px 20px;display:flex;align-items:center;gap:12px;background:var(--primary);color:#fff;">
         <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:13px;font-weight:700;">1</div>
         <div>
@@ -35,18 +35,18 @@
     </div>
 </div>
 
-<div class="card" style="padding:0;">
+<div class="card import-upload-card" style="padding:0;">
     <form method="POST" action="{{ route('admin.import.store') }}" enctype="multipart/form-data" id="import-form">
         @csrf
 
         <div id="drop-zone"
              style="padding:64px 32px 48px;cursor:pointer;transition:all .25s;border-radius:10px 10px 0 0;position:relative;text-align:center;"
-             ondragover="event.preventDefault();this.style.background='#f0f7ff'"
+              ondragover="event.preventDefault();this.style.background='#fff1f2'"
              ondragleave="event.preventDefault();this.style.background=''"
              ondrop="event.preventDefault();this.style.background='';handleDrop(event)">
 
             <div id="drop-initial">
-                <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:24px;background:linear-gradient(135deg,var(--primary-light),#dbeafe);display:grid;place-items:center;" id="upload-icon">
+                <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:24px;background:linear-gradient(135deg,#fff1f2,#ffe4e6);display:grid;place-items:center;" id="upload-icon">
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/>
@@ -67,8 +67,8 @@
             </div>
 
             <div id="file-preview" style="display:none;">
-                <div style="display:inline-flex;align-items:center;gap:14px;background:var(--accent-light);border:1px solid #a7f3d0;border-radius:12px;padding:16px 24px;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div style="display:inline-flex;align-items:center;gap:14px;background:#fff1f2;border:1px solid #fecaca;border-radius:12px;padding:16px 24px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e31b23" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
                         <line x1="16" y1="13" x2="8" y2="13"/>
@@ -93,7 +93,7 @@
             <input type="file" id="file-input" name="file" accept=".xlsx,.xls" required style="display:none;" onchange="fileSelected(this)">
         </div>
 
-        <div style="padding:18px 24px;display:flex;align-items:center;gap:16px;border-top:1px solid var(--border);background:var(--bg);border-radius:0 0 10px 10px;">
+        <div style="padding:18px 24px;display:flex;align-items:center;gap:16px;border-top:1px solid #fecaca;background:#fff7f7;border-radius:0 0 10px 10px;">
             <div style="display:flex;align-items:center;gap:10px;">
                 <label for="year" style="font-size:13px;font-weight:600;white-space:nowrap;">Tahun</label>
                 <input type="number" id="year" name="year" value="{{ old('year', 2026) }}" min="2000" max="2100" required style="width:100px;">
@@ -107,7 +107,7 @@
 </div>
 
 {{-- Export --}}
-<div class="card" style="margin-top:24px;">
+<div class="card import-export-card" style="margin-top:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div>
             <div style="font-weight:700;font-size:16px;color:var(--text);">Export Data</div>
@@ -126,7 +126,7 @@
 </div>
 
 {{-- Riwayat Import --}}
-<div class="card" style="margin-top:24px;">
+<div class="card import-history-card" style="margin-top:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div>
             <div style="font-weight:700;font-size:16px;color:var(--text);">Riwayat Import</div>
@@ -179,13 +179,16 @@
 #drop-zone.dragover #upload-icon { transform: scale(1.08); }
 .table-wrap { overflow-x: auto; border-radius: 6px; border: 1px solid var(--border); }
 table { width:100%; border-collapse:collapse; font-size:14px; }
-thead th { background:#f9fafb; padding:11px 14px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-secondary); border-bottom:2px solid var(--border); text-align:left; white-space:nowrap; }
+    thead th { background:#fff1f2; padding:11px 14px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:#991b1b; border-bottom:2px solid #fecaca; text-align:left; white-space:nowrap; }
 tbody td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
-tbody tr:hover { background:#f9fafb; }
+    tbody tr:hover { background:#fff5f5; }
 tbody tr:last-child td { border-bottom:0; }
 .badge { display:inline-flex; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:500; }
 .badge.success { background:var(--accent-light); color:#065f46; }
-.badge.danger { background:var(--danger-light); color:#991b1b; }
+    .badge.danger { background:var(--danger-light); color:#991b1b; }
+    .import-upload-card { border-color:#fecaca; box-shadow:0 10px 24px -22px rgba(225,29,39,.65); }
+    .import-export-card, .import-history-card { border-color:#fecaca; background:linear-gradient(145deg,#fff7f7 0%,#fff 45%); }
+    .import-history-card .badge.success { background:#fff1f2; color:#b91c1c; }
 </style>
 
 <script>

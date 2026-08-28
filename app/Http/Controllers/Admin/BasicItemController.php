@@ -115,6 +115,118 @@ class BasicItemController extends Controller
         );
     }
 
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'period_id' => [
+                'required',
+                'exists:periods,id',
+            ],
+
+            'return_region_id' => [
+                'nullable',
+                'exists:regions,id',
+            ],
+
+            'item_type' => [
+                'required',
+                Rule::in([
+                    'labor',
+                    'material',
+                    'equipment',
+                    'dkd',
+                ]),
+            ],
+
+            'description' => [
+                'required',
+                'string',
+                'max:500',
+            ],
+
+            'unit' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'price' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+        ]);
+
+        $validated['description'] = trim(
+            $validated['description']
+        );
+
+        $basicItem = DB::transaction(
+            function () use (
+                $validated,
+                $request
+            ): BasicItem {
+                $basicItem = BasicItem::query()->create([
+                    'item_type' => $validated['item_type'],
+
+                    'description' => $validated[
+                        'description'
+                    ],
+
+                    'unit' => filled(
+                        $validated['unit'] ?? null
+                    )
+                        ? trim($validated['unit'])
+                        : null,
+
+                    'is_active' => true,
+                ]);
+
+                $regionId = $request->filled(
+                    'return_region_id'
+                )
+                    ? (int) $request->input(
+                        'return_region_id'
+                    )
+                    : (int) Region::query()
+                        ->where('is_active', true)
+                        ->orderBy('sort_order')
+                        ->value('id');
+
+                $price = $validated['price'] ?? null;
+
+                if ($price !== null && $price !== '') {
+                    $basicItem->prices()->updateOrCreate(
+                        [
+                            'period_id' => (int) $validated[
+                                'period_id'
+                            ],
+
+                            'region_id' => $regionId,
+                        ],
+                        [
+                            'price' => (float) $price,
+                        ]
+                    );
+                }
+
+                return $basicItem;
+            }
+        );
+
+        return redirect()
+            ->route('admin.basic-items.index', [
+                'period' => $validated['period_id'],
+                'region' => $validated['return_region_id']
+                    ?? null,
+                'type' => $validated['item_type'],
+            ])
+            ->with(
+                'success',
+                'Upah, bahan, atau alat berhasil ditambahkan.'
+            );
+    }
+
     public function edit(
         Request $request,
         BasicItem $basicItem
