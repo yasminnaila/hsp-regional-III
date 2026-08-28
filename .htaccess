@@ -1,0 +1,6 @@
+# Untuk InfinityFree / Shared Hosting gratis yang DocumentRoot tidak bisa diubah ke /public
+# Letakkan file ini di htdocs/ (root hosting), bukan di public/
+# Jika hosting sudah support ubah DocumentRoot ke /public, HAPUS file ini.
+
+RewriteEngine On
+RewriteRule ^(.*)$ public/$1 [L]

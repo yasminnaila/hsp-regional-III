@@ -1,0 +1,12 @@
+# Untuk Railway.app (gratis trial)
+[phases.setup]
+nixPkgs = ["php82", "php82Packages.composer", "nodejs_20", "nginx"]
+
+[phases.install]
+cmds = ["composer install --no-dev --optimize-autoloader --no-interaction", "npm ci || npm install"]
+
+[phases.build]
+cmds = ["npm run build", "php artisan storage:link || true"]
+
+[start]
+cmd = "php artisan migrate --force && php artisan config:cache && php artisan serve --host=0.0.0.0 --port=$PORT"
